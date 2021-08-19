@@ -1,0 +1,4 @@
+- UART-Ausg‰nge fehlen
+- Stecker zu groﬂ
+- Footprint von Gyro falsch
+- PCB wird warm in der N‰he der Opamps
