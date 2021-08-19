@@ -23,13 +23,13 @@ extern "C" {
 #endif
  
 //interface
+void timer_init();
 timer_t* timer_create();
 void timer_start_countdown(timer_t* timer, uint16_t ms);
 bool timer_has_finished(timer_t* timer);
 void timer_stop(timer_t* timer);
 void timer_delete(timer_t* timer);
-//interrupt callback
-void timer_int_func();
+
 
 #ifdef	__cplusplus
 }

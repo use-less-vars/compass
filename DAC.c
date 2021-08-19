@@ -15,9 +15,16 @@
 //std libs
 #include <stdio.h>
 
-//I2C related functions
+//not used
+#define SLAVE_I2C_GENERIC_RETRY_MAX           100
+#define SLAVE_I2C_GENERIC_DEVICE_TIMEOUT      50   // define slave timeout 
 
-void v_ref_set(float voltage, uint8_t channel){
+
+void DAC_init(){
+    I2C1_Initialize();    
+}
+
+void DAC_v_ref_set(float voltage, uint8_t channel){
     uint16_t val = (uint16_t)((-voltage+(float)15.15)*151.7);
     printf("Ref Voltage: %f, val: %d, channel %d\r\n",voltage,val,channel);
     uint8_t temp = 0b01011000 | (channel << 1);
@@ -44,7 +51,7 @@ void v_ref_set(float voltage, uint8_t channel){
     __delay_ms(50);
 }
 
-void v_supply_set(float voltage, uint8_t channel){
+void DAC_v_supply_set(float voltage, uint8_t channel){
     uint16_t val = (uint16_t)(voltage*4096/(3.6786*3.3));
     printf("Supply Voltage: %f, val: %d, channel %d\r\n",voltage,val,channel);
     uint8_t temp = 0b01011000 | (channel << 1);

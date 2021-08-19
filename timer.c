@@ -19,10 +19,14 @@
 
 //local functions
 void _timers_update();
+void _timer_int_func();
 
 //local vars
 timer_t timers[NUMBER_OF_TIMERS];
 
+void timer_init(){
+    TMR1_SetInterruptHandler(_timer_int_func);
+}
 
 timer_t* timer_create(){
     for(uint8_t i = 0; i < NUMBER_OF_TIMERS; i++){
@@ -62,7 +66,7 @@ void _timers_update(){
 }
 
 
-void timer_int_func(){
+void _timer_int_func(){
     static uint8_t tick = 0;
     tick++;
     //count to 2 to get millisecs, since timer interrupt is configured for 0.5ms by tmr1.c
