@@ -1,5 +1,6 @@
 //my libs
 #include "project.h"
+#include "timer.h"
 
 //PIC libs
 #include <xc.h>
@@ -10,7 +11,8 @@
 //generated libs
 #include "i2c2.h"
 #include "i2c1.h"
-#include "timer.h"
+#include "tmr1.h"
+
 
 //std libs
 #include <stdio.h>

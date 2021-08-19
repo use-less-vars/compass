@@ -20,6 +20,7 @@
 //my libs
 #include "DAC.h"
 #include "ADC.h"
+#include "UART.h"
 #include "project.h"
 #include "timer.h"
 
@@ -33,33 +34,10 @@
 #include <math.h>
 
 
-#define RX_BUFFER_SIZE  20
-char rx_input[RX_BUFFER_SIZE];
-bool do_print = 0;
-uint8_t rx_index;
-//the _U1RXInterrupt does something similar, but it seems to be bullshit.
-void UART1_Receive_CallBack(){
-    while((U1STAbits.URXDA == 1))
-    {
-        if(rx_index == 0){
-            memset(rx_input,0,RX_BUFFER_SIZE);
-        }
-        rx_input[rx_index] = U1RXREG;;
-        if(rx_index >= RX_BUFFER_SIZE-1){
-            memset(rx_input,0,RX_BUFFER_SIZE);
-            rx_index = 0;
-        }else if(rx_input[rx_index] == '\r'){
-            do_print = true;
-            rx_index = 0;
-        }else{
-           rx_index++; 
-        }  
-    }
-    
-}
+
 
 int main(void) {
-    memset(rx_input,0,10);
+    
     SYSTEM_Initialize();
     // INTERRUPT_GlobalEnable();
     //PIN_MANAGER_Initialize();
@@ -70,6 +48,7 @@ int main(void) {
     //UART1_SetRxInterruptHandler(uart_rx_callback);
     ADC_init();
     DAC_init();
+    UART_init();
     //I2C2_Initialize();
     uint16_t val = 0;
     

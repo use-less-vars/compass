@@ -8,6 +8,9 @@
 #ifndef TIMER_H
 #define	TIMER_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #define TIMER_STATE_NEW       0
 #define TIMER_STATE_RUNNING   1
 #define TIMER_STATE_STOPPED   2
