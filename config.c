@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 
+//my libs
 #include "config.h"
 
 //defaults
