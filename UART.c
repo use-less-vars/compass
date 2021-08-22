@@ -29,9 +29,10 @@
 
 //local types
 typedef struct{
-    uint8_t rx_input[RX_BUFFER_SIZE];
-    uint8_t message_status;
+    uint8_t rx_input_buf[RX_BUFFER_SIZE];
+    uint8_t state;
     uint8_t rx_index;
+    uint8_t reprint_index;
 }uart_state_t;
 
 //local vars
@@ -46,9 +47,10 @@ callback_on_msg_t callback_on_msg;
 
 void UART_init(){
     //init state machine
-    memset(uart.rx_input,0,RX_BUFFER_SIZE);
-    uart.message_status = RX_BUFFER_EMPTY;
+    memset(uart.rx_input_buf,0,RX_BUFFER_SIZE);
+    uart.state = RX_BUFFER_EMPTY;
     uart.rx_index = 0;
+    
     UART1_SetRxInterruptHandler(_UART1_Receive_CallBack);
     
 }
@@ -60,23 +62,23 @@ void _UART1_Receive_CallBack(){
     while((U1STAbits.URXDA == 1))
     {   
         current_byte = U1RXREG;
-        switch(uart.message_status){
+        switch(uart.state){
             case RX_BUFFER_EMPTY:
-                memset(uart.rx_input,0,RX_BUFFER_SIZE);
+                memset(uart.rx_input_buf,0,RX_BUFFER_SIZE);
                 uart.rx_index = 0;
-                uart.rx_input[uart.rx_index] = current_byte;
+                uart.rx_input_buf[uart.rx_index] = current_byte;
                 uart.rx_index++;
-                uart.message_status = RX_BUFFER_PART_MSG_RXED;
+                uart.state = RX_BUFFER_PART_MSG_RXED;
             break;
             case RX_BUFFER_PART_MSG_RXED:
                 if(uart.rx_index == RX_BUFFER_SIZE - 1){
-                    uart.message_status = RX_BUFFER_ERROR;
+                    uart.state = RX_BUFFER_ERROR;
                     break;
                 }
-                uart.rx_input[uart.rx_index] = current_byte;
+                uart.rx_input_buf[uart.rx_index] = current_byte;
                 uart.rx_index++;
                 if(current_byte == '\r'){
-                    uart.message_status = RX_BUFFER_FULL_MSG_RXED;
+                    uart.state = RX_BUFFER_FULL_MSG_RXED;
                 }
             break;
             case RX_BUFFER_FULL_MSG_RXED:
@@ -113,17 +115,27 @@ void UART_register_callback_on_msg(callback_on_msg_t cb){
 }
 
 bool UART_update(){
+    //print back incoming chars
+    if(uart.state == RX_BUFFER_EMPTY){
+        uart.reprint_index = 0;
+    }else{
+        while(uart.reprint_index < uart.rx_index){
+            printf("%c",uart.rx_input_buf[uart.reprint_index]);
+            uart.reprint_index++;
+        }
+    }
     //In case of error simply reset state (and the STM clears everything).
     //If, however, a full '\r'-ended message is present, call the callback. 
     //Return if the buffer is empty or not. This may be used to pause normal program
     //execution until a full message is received. 
-    if(uart.message_status == RX_BUFFER_ERROR){
-        uart.message_status = RX_BUFFER_EMPTY;
-    }else if(uart.message_status == RX_BUFFER_FULL_MSG_RXED){
+    if(uart.state == RX_BUFFER_ERROR){
+        uart.state = RX_BUFFER_EMPTY;
+    }else if(uart.state == RX_BUFFER_FULL_MSG_RXED){
         if(callback_on_msg != NULL){
-            callback_on_msg(uart.rx_input);
+            callback_on_msg(uart.rx_input_buf);
         }
-        uart.message_status = RX_BUFFER_EMPTY;
+        uart.state = RX_BUFFER_EMPTY;
     }
-    return uart.message_status == RX_BUFFER_EMPTY;
+    
+    return uart.state == RX_BUFFER_EMPTY;
 }

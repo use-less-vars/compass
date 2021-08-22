@@ -23,6 +23,7 @@
 #include "UART.h"
 #include "project.h"
 #include "timer.h"
+#include "config.h"
 
 //PIC libs
 #include <libpic30.h>
@@ -44,21 +45,28 @@ int main(void) {
     DAC_init();
     UART_init();
     config_init();
-    
     uint16_t val = 0;
     
     uint16_t val2 = 0;
     uint8_t val3 = 0;
     //set DAC-vals. This will be replaced by values, loaded from storage
-    DAC_v_supply_set(7, 0);
-    DAC_v_supply_set(7, 1);
-    DAC_v_supply_set(7,2);
-    DAC_v_ref_set(0, 0);
-    DAC_v_ref_set(-0.25, 1);
-    DAC_v_ref_set(0, 2);
-    float v = -2.0;
+    for(uint8_t i = 0; i < 3; i++){
+       DAC_v_supply_set(config_get_supply(i), i); 
+    }
+    for(uint8_t i = 0; i < 3; i++){
+       DAC_v_ref_set(config_get_ref(i), i); 
+    }
+    timer_t *t1 = timer_create();
+    timer_start_countdown(t1,1000);
     while(1){
         UART_update();
+        
+        if(timer_has_finished(t1)){
+            printf("sec\r\n");
+            timer_start_countdown(t1,1000);
+        }
+        
+        
         //switch()
 //        uint16_t val_x = (uint16_t)dataReceived[3]<<8;
 //        val_x += (uint16_t)dataReceived[4];

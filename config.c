@@ -55,7 +55,56 @@ void config_init(){
 //logic to evaluate inputs from user and put them to the config
 void _config_eval_user_input(uint8_t* input_str){
     //...
-    printf("Some config came %s\r\n", input_str);
+    printf("Some config came: %s\r\n", input_str);
+    
 }
 
-//TODO: getter functions for main-logic
+uint8_t config_get_number_of_samples(){
+    return config.number_of_samples;
+} 
+
+uint16_t config_get_cycle_time(){
+    return config.cycle_time;
+}
+
+uint8_t config_get_print_mode(){
+    return config.print_mode;
+}
+
+bool config_get_flipping_on(){
+    return config.flipping_on;
+}
+
+double config_get_supply(uint8_t channel){
+    switch(channel){
+        case 0:
+            return config.supply_x;
+        break;
+        case 1:
+            return config.supply_y;
+        break;
+        case 2:
+            return config.supply_z;
+        break;
+        default:
+            return 0.0;
+        break;
+    }   
+}
+
+double config_get_ref(uint8_t channel){
+    switch(channel){
+        case 0:
+            return config.ref_x;
+        break;
+        case 1:
+            return config.ref_y;
+        break;
+        case 2:
+            return config.ref_z;
+        break;
+        default:
+            return 0.0;
+        break;
+    }   
+}

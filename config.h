@@ -30,6 +30,12 @@ typedef struct {
 
 void config_init();
 
+uint8_t config_get_number_of_samples();
+uint16_t config_get_cycle_time();
+uint8_t config_get_print_mode();
+bool config_get_flipping_on();
+double config_get_supply(uint8_t channel);
+double config_get_ref(uint8_t channel);
 
 
 #endif	/* CONFIG_H */

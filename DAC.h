@@ -13,8 +13,8 @@ extern "C" {
 #endif
 
 void DAC_init(); 
-void DAC_v_ref_set(float voltage, uint8_t channel);
-void DAC_v_supply_set(float voltage, uint8_t channel);
+void DAC_v_ref_set(double voltage, uint8_t channel);
+void DAC_v_supply_set(double voltage, uint8_t channel);
 
 #ifdef	__cplusplus
 }
