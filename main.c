@@ -37,19 +37,14 @@
 
 
 int main(void) {
-    
     SYSTEM_Initialize();
-    // INTERRUPT_GlobalEnable();
-    //PIN_MANAGER_Initialize();
-    CLOCK_Initialize();
-    //INTERRUPT_Initialize();
     INTERRUPT_GlobalEnable();
     timer_init();
-    //UART1_SetRxInterruptHandler(uart_rx_callback);
     ADC_init();
     DAC_init();
     UART_init();
-    //I2C2_Initialize();
+    config_init();
+    
     uint16_t val = 0;
     
     uint16_t val2 = 0;
@@ -63,7 +58,7 @@ int main(void) {
     DAC_v_ref_set(0, 2);
     float v = -2.0;
     while(1){
-        
+        UART_update();
         //switch()
 //        uint16_t val_x = (uint16_t)dataReceived[3]<<8;
 //        val_x += (uint16_t)dataReceived[4];

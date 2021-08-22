@@ -55,6 +55,7 @@ void config_init(){
 //logic to evaluate inputs from user and put them to the config
 void _config_eval_user_input(uint8_t* input_str){
     //...
+    printf("Some config came %s\r\n", input_str);
 }
 
 //TODO: getter functions for main-logic

@@ -12,7 +12,7 @@ typedef void (*callback_on_msg_t)(uint8_t* msg);
     
 void UART_init();
 void UART_register_callback_on_msg(callback_on_msg_t cb);
-
+bool UART_update();
 
 
 
