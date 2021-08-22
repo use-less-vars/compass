@@ -33,6 +33,8 @@ void _UART1_Receive_CallBack();
 char rx_input[RX_BUFFER_SIZE];
 uint8_t message_status = RX_BUFFER_EMPTY;
 
+callback_on_msg_t callback_on_msg; 
+
 void UART_init(){
     memset(rx_input,0,RX_BUFFER_SIZE);
     UART1_SetRxInterruptHandler(_UART1_Receive_CallBack);
@@ -43,7 +45,14 @@ void UART_init(){
 void _UART1_Receive_CallBack(){
     static uint8_t rx_index = 0;
     while((U1STAbits.URXDA == 1))
-    {
+    {   
+//        switch(message_status){
+//            case RX_BUFFER_EMPTY:
+//                memset(rx_input,0,RX_BUFFER_SIZE);
+//                break;
+//        }
+        
+        
         if(rx_index == 0){
             memset(rx_input,0,RX_BUFFER_SIZE);
         }
@@ -58,4 +67,9 @@ void _UART1_Receive_CallBack(){
            rx_index++; 
         }  
     } 
+}
+
+
+void UART_register_callback_on_msg(callback_on_msg_t cb){
+    callback_on_msg = cb;
 }

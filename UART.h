@@ -8,16 +8,13 @@
 #ifndef UART_H
 #define	UART_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
+typedef void (*callback_on_msg_t)(uint8_t* msg);
     
 void UART_init();
+void UART_register_callback_on_msg(callback_on_msg_t cb);
 
 
-#ifdef	__cplusplus
-}
-#endif
+
 
 #endif	/* UART_H */
 

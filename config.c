@@ -9,6 +9,7 @@
 
 //my libs
 #include "config.h"
+#include "UART.h"
 
 //defaults
 #define CONFIG_DEFAULT_CYCLE_TIME           100
@@ -27,7 +28,13 @@
 #define CONFIG_PRINT_MODE_VERBOSE           0
 #define CONFIG_PRINT_MODE_FAST              1
 
+//local functions
+void _config_eval_user_input(uint8_t* input_str);
+
+//local vars
 config_t config;
+
+
 
 void config_init(){
     //there will be loading from permanent memory, but for now, we use standard vals
@@ -41,10 +48,12 @@ void config_init(){
     config.supply_x = CONFIG_DEFAULT_SUPPLY_VOLTAGE;
     config.supply_y = CONFIG_DEFAULT_SUPPLY_VOLTAGE;
     config.supply_z = CONFIG_DEFAULT_SUPPLY_VOLTAGE;
+    //if a new full message has arrived, let UART call this function to evaluate it
+    UART_register_callback_on_msg(_config_eval_user_input);
 }
 
 //logic to evaluate inputs from user and put them to the config
-void _config_eval_user_input(char* input_str){
+void _config_eval_user_input(uint8_t* input_str){
     //...
 }
 
