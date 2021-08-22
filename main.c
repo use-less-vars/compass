@@ -35,9 +35,20 @@
 #include <math.h>
 
 
+#define MAIN_STATE_P_FLIP           0
+#define MAIN_STATE_P_WAIT           1
+#define MAIN_STATE_P_MEAS           2
+#define MAIN_STATE_N_FLIP           3
+#define MAIN_STATE_N_WAIT           4
+#define MAIN_STATE_N_MEAS           5
+#define MAIN_STATE_EVAL             6
+#define MAIN_STATE_SHOW             7
+#define MAIN_STATE_UPDATE_CONFIG    8
 
+uint8_t state;
 
 int main(void) {
+    //init modules
     SYSTEM_Initialize();
     INTERRUPT_GlobalEnable();
     timer_init();
@@ -45,26 +56,20 @@ int main(void) {
     DAC_init();
     UART_init();
     config_init();
-    uint16_t val = 0;
-    
-    uint16_t val2 = 0;
-    uint8_t val3 = 0;
-    //set DAC-vals. This will be replaced by values, loaded from storage
+    //set DAC-vals, supply voltage and reference voltage
     for(uint8_t i = 0; i < 3; i++){
        DAC_v_supply_set(config_get_supply(i), i); 
     }
     for(uint8_t i = 0; i < 3; i++){
        DAC_v_ref_set(config_get_ref(i), i); 
     }
+    state = MAIN_STATE_P_FLIP;
     timer_t *t1 = timer_create();
     timer_start_countdown(t1,1000);
     while(1){
         UART_update();
         
-        if(timer_has_finished(t1)){
-            printf("sec\r\n");
-            timer_start_countdown(t1,1000);
-        }
+        
         
         
         //switch()
