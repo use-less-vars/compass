@@ -1,6 +1,9 @@
 /* 
  * File:   ADC.h
  * Author: use-less-vars
+ * 
+ * Customized Lib to read data from the ADS131M04. This is highly customized and 
+ * by no means reflects the full set of capabilities of this chip. 
  *
  * Created on 19. August 2021, 13:07
  */

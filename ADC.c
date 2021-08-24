@@ -19,11 +19,27 @@
 #include <stdio.h>
 #include <stdint.h>
 
+//define states for the data acquisition
+#define SPI_START_ACQUISITION                0
+#define SPI_ACQUIRE_DATA        1
+#define SPI_FINISHED_ACQUISITION    2
+
+//define SPI data
+typedef struct{
+    uint8_t state;
+    int32_t val_x;
+    int32_t val_y;
+    int32_t val_z;
+    uint8_t sample_count_current;
+    uint8_t sample_count_target;
+}SPI_data_t;
+
 //local functions
 void _set_sample_rate();
 void _get_adc_val();
 
 //local vars
+SPI_data_t spi;
 uint8_t dataTransmitted[3*6];
 uint8_t dataReceived[3*6];
 bool newDataAvailable;
@@ -33,6 +49,9 @@ data_point_t p_val;
 void ADC_init(){
     IO_RA0_SetInterruptHandler(_get_adc_val); 
     _set_sample_rate();
+    //go to "idle" state until application triggers acquisition
+    state = SPI_FINISHED_ACQUISITION;
+    
     
 }
 
@@ -61,10 +80,43 @@ void _set_sample_rate(){
 }
 
 //callback when new data available
+// RX-Message from SPI contains Data, structured in 24Bit words:
+// - Word 0: Status of the Device 
+// - Word 1-4: 24Bit ADC-val of the n-th input
+// - Word 5: CRC checksum (which, of course, is not used)
+
 void _get_adc_val(){
+    //CS Pin low enables the chip
     IO_RC9_SetLow();
     memset(dataTransmitted, 0, sizeof(dataTransmitted));
     SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
-    newDataAvailable = true;
+    switch(spi.state){
+        case SPI_START_ACQUISITION:
+            //if the state is set to START_ACQUISITION, the first data sample is thrown away
+            // for code simplicity
+            spi.sample_count_current = 0;
+            spi.val_x = 0;
+            spi.val_y = 0;
+            spi.val_z = 0;
+            spi.state = SPI_ACQUIRE_DATA;
+            break;
+        case SPI_ACQUIRE_DATA:
+            if(spi.sample_count_current < spi.sample_count_target){
+                spi.sample_count_current++;
+                //truncate to 16Bit (throw 8LSB away)
+                
+                //Caution: signedness is probably not correct.
+                spi.val_x += ((int16_t)dataReceived[3] << 8) | dataReceived[4];
+                spi.val_y += ((int16_t)dataReceived[6] << 8) | dataReceived[7];
+                spi.val_z += ((int16_t)dataReceived[9] << 8) | dataReceived[10];
+            }else{
+                spi.state SPI_FINISHED_ACQUISITION;
+            }
+            break;
+        case SPI_FINISHED_ACQUISITION:
+            break;
+        default:
+            break;
+    }
     IO_RC9_SetHigh();
 }

@@ -97,14 +97,14 @@
 #include "pin_manager.h"
 #include "clock.h"
 #include "system.h"
-#include "i2c1.h"
-#include "memory/flash.h"
-#include "spi1.h"
 #include "interrupt_manager.h"
 #include "traps.h"
+#include "spi1.h"
 #include "uart1.h"
-#include "i2c2.h"
 #include "tmr1.h"
+#include "i2c2.h"
+#include "i2c1.h"
+#include "memory/flash.h"
 
 void SYSTEM_Initialize(void)
 {

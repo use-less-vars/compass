@@ -69,7 +69,10 @@ int main(void) {
     while(1){
         UART_update();
         
-        
+        switch(state){
+            case MAIN_STATE_P_FLIP:
+                break;
+        }
         
         
         //switch()
