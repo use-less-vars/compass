@@ -6,6 +6,7 @@
 #include "tmr1.h"
 
 //my libs
+#include <limits.h>
 #include "ADC.h"
 #include "DAC.h"
 #include "project.h"
@@ -42,15 +43,12 @@ void _get_adc_val();
 SPI_data_t spi;
 uint8_t dataTransmitted[3*6];
 uint8_t dataReceived[3*6];
-bool newDataAvailable;
-data_point_t n_val;
-data_point_t p_val;
 
 void ADC_init(){
     IO_RA0_SetInterruptHandler(_get_adc_val); 
     _set_sample_rate();
     //go to "idle" state until application triggers acquisition
-    state = SPI_FINISHED_ACQUISITION;
+    spi.state = SPI_FINISHED_ACQUISITION;
     
     
 }
@@ -105,18 +103,34 @@ void _get_adc_val(){
                 spi.sample_count_current++;
                 //truncate to 16Bit (throw 8LSB away)
                 
-                //Caution: signedness is probably not correct.
+                //signedness should be correct
                 spi.val_x += ((int16_t)dataReceived[3] << 8) | dataReceived[4];
                 spi.val_y += ((int16_t)dataReceived[6] << 8) | dataReceived[7];
                 spi.val_z += ((int16_t)dataReceived[9] << 8) | dataReceived[10];
             }else{
-                spi.state SPI_FINISHED_ACQUISITION;
+                spi.state = SPI_FINISHED_ACQUISITION;
             }
             break;
         case SPI_FINISHED_ACQUISITION:
+            //Keep data and do nothing until the STM is reset externally.
             break;
         default:
             break;
     }
     IO_RC9_SetHigh();
+}
+
+void SPI_start_sampling(uint8_t number_of_samples){
+    spi.sample_count_target = number_of_samples;
+    spi.state = SPI_START_ACQUISITION;
+}
+
+bool SPI_has_finished(){
+    return spi.state == SPI_FINISHED_ACQUISITION;
+}
+//make sure to pass a large enough array
+void SPI_get_data(int16_t *data){
+    data[0] = (int16_t)(spi.val_x/spi.sample_count_target);
+    data[1] = (int16_t)(spi.val_y/spi.sample_count_target);
+    data[2] = (int16_t)(spi.val_z/spi.sample_count_target);
 }

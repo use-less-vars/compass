@@ -65,14 +65,20 @@ int main(void) {
     }
     state = MAIN_STATE_P_FLIP;
     timer_t *t1 = timer_create();
-    timer_start_countdown(t1,1000);
+    
     while(1){
         UART_update();
         
-        switch(state){
-            case MAIN_STATE_P_FLIP:
-                break;
+        if(config_get_flipping_on()){
+            switch(state){
+                case MAIN_STATE_P_FLIP:
+                    timer_start_countdown(t1,1);
+                    P_FLIP_SetHigh();
+                    
+                    break;
+                }
         }
+        
         
         
         //switch()
