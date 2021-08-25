@@ -120,16 +120,16 @@ void _get_adc_val(){
     IO_RC9_SetHigh();
 }
 
-void SPI_start_sampling(uint8_t number_of_samples){
+void ADC_start_sampling(uint8_t number_of_samples){
     spi.sample_count_target = number_of_samples;
     spi.state = SPI_START_ACQUISITION;
 }
 
-bool SPI_has_finished(){
+bool ADC_has_finished(){
     return spi.state == SPI_FINISHED_ACQUISITION;
 }
 //make sure to pass a large enough array
-void SPI_get_data(int16_t *data){
+void ADC_get_data(int16_t *data){
     data[0] = (int16_t)(spi.val_x/spi.sample_count_target);
     data[1] = (int16_t)(spi.val_y/spi.sample_count_target);
     data[2] = (int16_t)(spi.val_z/spi.sample_count_target);

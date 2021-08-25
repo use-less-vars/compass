@@ -28,6 +28,10 @@ typedef struct{
 
 void ADC_init();
 
+void ADC_start_sampling(uint8_t number_of_samples);
+bool ADC_has_finished();
+void ADC_get_data(int16_t *data);
+
 
 #ifdef	__cplusplus
 }
