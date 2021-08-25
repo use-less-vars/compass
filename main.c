@@ -46,8 +46,16 @@
 #define MAIN_STATE_UPDATE_CONFIG    8
 
 uint8_t state;
+int16_t p_val_x;
+int16_t p_val_y;
+int16_t p_val_z;
+int16_t n_val_x;
+int16_t n_val_y;
+int16_t n_val_z;
+
 
 int main(void) {
+    int16_t data_buf[3];
     //init modules
     SYSTEM_Initialize();
     INTERRUPT_GlobalEnable();
@@ -68,17 +76,66 @@ int main(void) {
     
     while(1){
         UART_update();
-        
+        if(state == MAIN_STATE_SHOW){
+            printf("TODO: Print data\r\n");
+        }
         if(config_get_flipping_on()){
             switch(state){
                 case MAIN_STATE_P_FLIP:
                     timer_start_countdown(t1,1);
                     P_FLIP_SetHigh();
-                    
+                    state = MAIN_STATE_P_WAIT;
                     break;
-                }
+                case MAIN_STATE_P_WAIT:
+                    if(timer_has_finished(t1)){
+                        P_FLIP_SetLow();
+                        ADC_start_sampling(config_get_number_of_samples());
+                        state = MAIN_STATE_P_MEAS;
+                    }
+                    break;
+                case MAIN_STATE_P_MEAS:
+                    if(ADC_has_finished()){
+                        ADC_get_data(data_buf);
+                        p_val_x = data_buf[0];
+                        p_val_y = data_buf[1];
+                        p_val_z = data_buf[2];
+                        state = MAIN_STATE_N_FLIP;
+                    }
+                    break;
+                case MAIN_STATE_N_FLIP:
+                    timer_start_countdown(t1,1);
+                    N_FLIP_SetHigh();
+                    state = MAIN_STATE_N_WAIT;
+                    break;
+                case MAIN_STATE_N_WAIT:
+                    if(timer_has_finished(t1)){
+                        N_FLIP_SetLow();
+                        ADC_start_sampling(config_get_number_of_samples());
+                        state = MAIN_STATE_N_MEAS;
+                    }
+                    break;
+                case MAIN_STATE_N_MEAS:
+                    if(ADC_has_finished()){
+                        ADC_get_data(data_buf);
+                        n_val_x = data_buf[0];
+                        n_val_y = data_buf[1];
+                        n_val_z = data_buf[2];
+                        state = MAIN_STATE_EVAL;
+                    }
+                    break;
+                case MAIN_STATE_EVAL:
+                    //do eval stuff here
+                    state = MAIN_STATE_SHOW;
+                    break;
+                case MAIN_STATE_SHOW:
+                    state = MAIN_STATE_P_FLIP;
+                    break;
+                default:
+                    break;
+            }
         }
         
+       
         
         
         //switch()
