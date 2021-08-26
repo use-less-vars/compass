@@ -55,15 +55,15 @@ void ADC_init(){
 
 //only one mode is supported at the moment, see datasheet for OSR-settings
 void _set_sample_rate(){
-    memset(dataTransmitted,0,sizeof(dataTransmitted));
+//    memset(dataTransmitted,0,sizeof(dataTransmitted));
     //chop mode on
     //set OSR to 4096 (= 1kSPS)
-    dataTransmitted[0] = 0b01100001;
-    dataTransmitted[1] = 0b10000000;
-    dataTransmitted[2] = 0;
-    dataTransmitted[3] = 0b00000111;
-    dataTransmitted[4] = 0b00010110;
-    SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
+//    dataTransmitted[0] = 0b01100001;
+//    dataTransmitted[1] = 0b10000000;
+//    dataTransmitted[2] = 0;
+//    dataTransmitted[3] = 0b00000111;
+//    dataTransmitted[4] = 0b00010110;
+//    SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
     
 //    //set Chop mode on (not used at the moment)
 //    memset(dataTransmitted,0,sizeof(dataTransmitted));
@@ -75,6 +75,30 @@ void _set_sample_rate(){
 //    IO_RC9_SetLow();
 //    SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
 //    IO_RC9_SetHigh();
+    
+     memset(dataTransmitted,0,sizeof(dataTransmitted));
+    //set OSR to 4096 (= 1kSPS)
+    dataTransmitted[0] = 0b01100001;
+    dataTransmitted[1] = 0b10000000;
+    dataTransmitted[2] = 0;
+    dataTransmitted[3] = 0b00000111;
+    dataTransmitted[4] = 0b00010110;
+    IO_RC9_SetLow();
+    SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
+    IO_RC9_SetHigh();
+    memset(dataTransmitted,0,sizeof(dataTransmitted));
+//    //set Chop mode on
+//    memset(dataTransmitted,0,sizeof(dataTransmitted));
+//    dataTransmitted[0] = 0b01100011;
+//    dataTransmitted[1] = 0b00000000;
+//    dataTransmitted[2] = 0;
+//    dataTransmitted[3] = 0b00000111;
+//    dataTransmitted[4] = 0b00000000;
+//    IO_RC9_SetLow();
+//    SPI1_Exchange8bitBuffer(dataTransmitted, 3*6,dataReceived);
+//    IO_RC9_SetHigh();
+    LATAbits.LATA1 = 1;
+    memset(dataTransmitted,0,sizeof(dataTransmitted));
 }
 
 //callback when new data available

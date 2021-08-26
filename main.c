@@ -55,6 +55,7 @@ int16_t n_val_z;
 
 
 int main(void) {
+    uint16_t debug_counter = 0;
     int16_t data_buf[3];
     //init modules
     SYSTEM_Initialize();
@@ -73,14 +74,20 @@ int main(void) {
     }
     state = MAIN_STATE_P_FLIP;
     timer_t *t1 = timer_create();
-    
+    timer_t *t2 = timer_create();
+    timer_start_countdown(t2,2000);
     while(1){
         UART_update();
         if(state == MAIN_STATE_SHOW){
-            printf("        x       y       z\r\n");
-            printf("P: %6d, %6d, %6d\r\n", p_val_x,p_val_y,p_val_z);
-            printf("N: %6d, %6d, %6d\r\n", n_val_x,n_val_y,n_val_z);
-            printf("   %6d, %6d, %6d\r\n", p_val_x-n_val_x,p_val_y-n_val_y,p_val_z-n_val_z);
+            if(timer_has_finished(t2)){
+                debug_counter++;
+                printf("        x       y       z\r\n");
+                printf("P: %6d, %6d, %6d\r\n", p_val_x,p_val_y,p_val_z);
+                printf("N: %6d, %6d, %6d\r\n", n_val_x,n_val_y,n_val_z);
+                printf("   %6d, %6d, %6d\r\n", p_val_x-n_val_x,p_val_y-n_val_y,p_val_z-n_val_z);
+                printf("%d\n\r",debug_counter);
+                timer_start_countdown(t2,200);
+            }       
         }
         if(config_get_flipping_on()){
             switch(state){
@@ -88,6 +95,7 @@ int main(void) {
                     timer_start_countdown(t1,1);
                     P_FLIP_SetHigh();
                     state = MAIN_STATE_P_WAIT;
+                    debug_counter = 0;
                     break;
                 case MAIN_STATE_P_WAIT:
                     if(timer_has_finished(t1)){
@@ -131,6 +139,7 @@ int main(void) {
                     state = MAIN_STATE_SHOW;
                     break;
                 case MAIN_STATE_SHOW:
+                    //printf(".");
                     state = MAIN_STATE_P_FLIP;
                     break;
                 default:

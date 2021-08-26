@@ -16,6 +16,7 @@
 
 //std libs
 #include <stdio.h>
+#include <string.h>
 
 #define NUMBER_OF_TIMERS    5
 
@@ -26,12 +27,16 @@ void _timers_update();
 timer_t timers[NUMBER_OF_TIMERS];
 
 void timer_init(){
+    memset(timers,0,sizeof(timers));
     TMR1_SetInterruptHandler(_timers_update);
 }
 
 timer_t* timer_create(){
     for(uint8_t i = 0; i < NUMBER_OF_TIMERS; i++){
         if(timers[i].state == TIMER_STATE_NEW){
+            //change state before returning the timer, such that with the next create call
+            //it won't be given out twice.
+            timers[i].state = TIMER_STATE_STOPPED;
             return &timers[i];
         }
     }
