@@ -77,7 +77,10 @@ int main(void) {
     while(1){
         UART_update();
         if(state == MAIN_STATE_SHOW){
-            printf("TODO: Print data\r\n");
+            printf("        x       y       z\r\n");
+            printf("P: %6d, %6d, %6d\r\n", p_val_x,p_val_y,p_val_z);
+            printf("N: %6d, %6d, %6d\r\n", n_val_x,n_val_y,n_val_z);
+            printf("   %6d, %6d, %6d\r\n", p_val_x-n_val_x,p_val_y-n_val_y,p_val_z-n_val_z);
         }
         if(config_get_flipping_on()){
             switch(state){
