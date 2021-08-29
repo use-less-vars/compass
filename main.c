@@ -45,18 +45,27 @@
 #define MAIN_STATE_SHOW             7
 #define MAIN_STATE_UPDATE_CONFIG    8
 
-uint8_t state;
-int16_t p_val_x;
-int16_t p_val_y;
-int16_t p_val_z;
-int16_t n_val_x;
-int16_t n_val_y;
-int16_t n_val_z;
+typedef struct{
+    uint8_t state;
+    int16_t p_val_x;
+    int16_t p_val_y;
+    int16_t p_val_z;
+    int16_t n_val_x;
+    int16_t n_val_y;
+    int16_t n_val_z;
+    int16_t diff_x;
+    int16_t diff_y;
+    int16_t diff_z;
+    int16_t offset_x;
+    int16_t offset_y;
+    int16_t offset_z;
+}main_data_t;
 
+main_data_t main_data;
 
 int main(void) {
-    uint16_t debug_counter = 0;
     int16_t data_buf[3];
+    bool uart_empty = false;
     //init modules
     SYSTEM_Initialize();
     INTERRUPT_GlobalEnable();
@@ -65,82 +74,80 @@ int main(void) {
     DAC_init();
     UART_init();
     config_init();
-    //set DAC-vals, supply voltage and reference voltage
-    for(uint8_t i = 0; i < 3; i++){
-       DAC_v_supply_set(config_get_supply(i), i); 
-    }
-    for(uint8_t i = 0; i < 3; i++){
-       DAC_v_ref_set(config_get_ref(i), i); 
-    }
-    state = MAIN_STATE_P_FLIP;
+    
+    main_data.state = MAIN_STATE_P_FLIP;
     timer_t *t1 = timer_create();
     timer_t *t2 = timer_create();
     timer_start_countdown(t2,2000);
     while(1){
-        UART_update();
-        if(state == MAIN_STATE_SHOW){
-            if(timer_has_finished(t2)){
-                debug_counter++;
+        uart_empty = UART_update();
+        if(main_data.state == MAIN_STATE_SHOW){
+            if(timer_has_finished(t2) && uart_empty){
                 printf("        x       y       z\r\n");
-                printf("P: %6d, %6d, %6d\r\n", p_val_x,p_val_y,p_val_z);
-                printf("N: %6d, %6d, %6d\r\n", n_val_x,n_val_y,n_val_z);
-                printf("   %6d, %6d, %6d\r\n", p_val_x-n_val_x,p_val_y-n_val_y,p_val_z-n_val_z);
-                printf("%d\n\r",debug_counter);
+                printf("P: %6d, %6d, %6d\r\n", main_data.p_val_x,main_data.p_val_y,main_data.p_val_z);
+                printf("N: %6d, %6d, %6d\r\n", main_data.n_val_x,main_data.n_val_y,main_data.n_val_z);
+                printf("   %6d, %6d, %6d\r\n", main_data.diff_x,main_data.diff_y,main_data.diff_z);
+                printf("O: %6d, %6d, %6d\r\n", main_data.offset_x, main_data.offset_y, main_data.offset_z);
+                printf("\r\n");
                 timer_start_countdown(t2,200);
             }       
         }
         if(config_get_flipping_on()){
-            switch(state){
+            switch(main_data.state){
                 case MAIN_STATE_P_FLIP:
                     timer_start_countdown(t1,1);
                     P_FLIP_SetHigh();
-                    state = MAIN_STATE_P_WAIT;
-                    debug_counter = 0;
+                    main_data.state = MAIN_STATE_P_WAIT;
                     break;
                 case MAIN_STATE_P_WAIT:
                     if(timer_has_finished(t1)){
                         P_FLIP_SetLow();
                         ADC_start_sampling(config_get_number_of_samples());
-                        state = MAIN_STATE_P_MEAS;
+                        main_data.state = MAIN_STATE_P_MEAS;
                     }
                     break;
                 case MAIN_STATE_P_MEAS:
                     if(ADC_has_finished()){
                         ADC_get_data(data_buf);
-                        p_val_x = data_buf[0];
-                        p_val_y = data_buf[1];
-                        p_val_z = data_buf[2];
-                        state = MAIN_STATE_N_FLIP;
+                        main_data.p_val_x = data_buf[0];
+                        main_data.p_val_y = data_buf[1];
+                        main_data.p_val_z = data_buf[2];
+                        main_data.state = MAIN_STATE_N_FLIP;
                     }
                     break;
                 case MAIN_STATE_N_FLIP:
                     timer_start_countdown(t1,1);
                     N_FLIP_SetHigh();
-                    state = MAIN_STATE_N_WAIT;
+                    main_data.state = MAIN_STATE_N_WAIT;
                     break;
                 case MAIN_STATE_N_WAIT:
                     if(timer_has_finished(t1)){
                         N_FLIP_SetLow();
                         ADC_start_sampling(config_get_number_of_samples());
-                        state = MAIN_STATE_N_MEAS;
+                        main_data.state = MAIN_STATE_N_MEAS;
                     }
                     break;
                 case MAIN_STATE_N_MEAS:
                     if(ADC_has_finished()){
                         ADC_get_data(data_buf);
-                        n_val_x = data_buf[0];
-                        n_val_y = data_buf[1];
-                        n_val_z = data_buf[2];
-                        state = MAIN_STATE_EVAL;
+                        main_data.n_val_x = data_buf[0];
+                        main_data.n_val_y = data_buf[1];
+                        main_data.n_val_z = data_buf[2];
+                        main_data.state = MAIN_STATE_EVAL;
                     }
                     break;
                 case MAIN_STATE_EVAL:
                     //do eval stuff here
-                    state = MAIN_STATE_SHOW;
+                    main_data.diff_x = main_data.p_val_x-main_data.n_val_x;
+                    main_data.diff_y = main_data.p_val_y-main_data.n_val_y;
+                    main_data.diff_z = main_data.p_val_z-main_data.n_val_z;
+                    main_data.offset_x = ((int32_t)main_data.p_val_x+(int32_t)main_data.n_val_x)/2;
+                    main_data.offset_y = ((int32_t)main_data.p_val_y+(int32_t)main_data.n_val_y)/2;
+                    main_data.offset_z = ((int32_t)main_data.p_val_z+(int32_t)main_data.n_val_z)/2;
+                    main_data.state = MAIN_STATE_SHOW;
                     break;
                 case MAIN_STATE_SHOW:
-                    //printf(".");
-                    state = MAIN_STATE_P_FLIP;
+                    main_data.state = MAIN_STATE_P_FLIP;
                     break;
                 default:
                     break;
