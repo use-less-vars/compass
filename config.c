@@ -152,6 +152,16 @@ void _config_eval_user_input(uint8_t* input_str){
         }
     }
     
+    if(strcmp(cmd,"print") == 0){
+        if(strcmp(args[0],"verbose") == 0){
+            config.print_mode = CONFIG_PRINT_MODE_VERBOSE;
+        }else if(strcmp(args[0],"fast") == 0){
+            config.print_mode = CONFIG_PRINT_MODE_FAST;
+        }else{
+            //maybe there will be more variants of printing data
+        }
+    }
+    
     
 }
 
