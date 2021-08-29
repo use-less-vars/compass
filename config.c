@@ -131,6 +131,27 @@ void _config_eval_user_input(uint8_t* input_str){
         config.number_of_samples = allowed ? number_of_samples : config.number_of_samples;
     }
     
+    if(strcmp(cmd,"save") == 0){
+        //do save to flash
+    }
+    
+    if(strcmp(cmd,"freq") == 0){
+        char* ptr;
+        uint16_t freq = strtol(args[0],&ptr,10);
+        //convert frequency to times in ms
+        allowed = 1000/freq >= CONFIG_MIN_CYCLE_TIME ? true : false;
+        config.cycle_time = allowed ? 1000/freq : config.cycle_time;
+    }
+    if(strcmp(cmd,"flip") == 0){
+        if(strcmp(args[0],"on") == 0){
+            config.flipping_on = true;
+        }else if(strcmp(args[0],"off") == 0){
+            config.flipping_on = false;
+        }else{
+            //do nothing when wrong command
+        }
+    }
+    
     
 }
 
