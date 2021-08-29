@@ -1,4 +1,8 @@
-- UART-Ausg‰nge fehlen
-- Stecker zu groﬂ
-- Footprint von Gyro falsch
-- PCB wird warm in der N‰he der Opamps
+- wrong pins for MOSI, MISO
+- 3.2V Protection is actually 1.65V. 
+- negative voltage protection missing, 0 is wrong
+- footprint Gyro wrong
+- Opamp too much current
+- connector too large
+- DAC supply ripple?
+- indicator for PICkit polarization missing

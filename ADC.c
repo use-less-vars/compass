@@ -11,6 +11,7 @@
 #include "DAC.h"
 #include "project.h"
 #include "timer.h"
+#include "config.h"
 
 //PIC libs
 #include <libpic30.h>
@@ -32,7 +33,6 @@ typedef struct{
     int32_t val_y;
     int32_t val_z;
     uint8_t sample_count_current;
-    uint8_t sample_count_target;
 }SPI_data_t;
 
 //local functions
@@ -123,7 +123,7 @@ void _get_adc_val(){
             spi.state = SPI_ACQUIRE_DATA;
             break;
         case SPI_ACQUIRE_DATA:
-            if(spi.sample_count_current < spi.sample_count_target){
+            if(spi.sample_count_current < config_get_number_of_samples()){
                 spi.sample_count_current++;
                 //truncate to 16Bit (throw 8LSB away)
                 
@@ -145,7 +145,6 @@ void _get_adc_val(){
 }
 
 void ADC_start_sampling(uint8_t number_of_samples){
-    spi.sample_count_target = number_of_samples;
     spi.state = SPI_START_ACQUISITION;
 }
 
@@ -154,7 +153,8 @@ bool ADC_has_finished(){
 }
 //make sure to pass a large enough array
 void ADC_get_data(int16_t *data){
-    data[0] = (int16_t)(spi.val_x/spi.sample_count_target);
-    data[1] = (int16_t)(spi.val_y/spi.sample_count_target);
-    data[2] = (int16_t)(spi.val_z/spi.sample_count_target);
+    uint8_t sample_count_target = config_get_number_of_samples();
+    data[0] = (int16_t)(spi.val_x/sample_count_target);
+    data[1] = (int16_t)(spi.val_y/sample_count_target);
+    data[2] = (int16_t)(spi.val_z/sample_count_target);
 }

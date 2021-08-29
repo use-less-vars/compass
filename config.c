@@ -5,6 +5,7 @@
 //Standard libs
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 //my libs
@@ -49,7 +50,7 @@ void config_init(){
     config.number_of_samples = CONFIG_DEFAULT_NUMBER_OF_SAMPLES;
     config.print_mode = CONFIG_PRINT_MODE_VERBOSE;
     config.ref_x = CONFIG_DEFAULT_REF_VOLTAGE;
-    config.ref_y = CONFIG_DEFAULT_REF_VOLTAGE;
+    config.ref_y = -1.03;//vCONFIG_DEFAULT_REF_VOLTAGE;
     config.ref_z = CONFIG_DEFAULT_REF_VOLTAGE;
     config.supply_x = CONFIG_DEFAULT_SUPPLY_VOLTAGE;
     config.supply_y = CONFIG_DEFAULT_SUPPLY_VOLTAGE;
@@ -71,7 +72,7 @@ void _config_eval_user_input(uint8_t* input_str){
     
     printf("Some config came: %s\r\n", input_str);
     //input commands are separated by spaces only
-    char delim[] = " ";
+    char delim[] = " \r\n";
     char* args[CONFIG_NUM_OF_ARGS];
     char* cmd;
     cmd = strtok((char*)input_str,delim);
@@ -88,41 +89,47 @@ void _config_eval_user_input(uint8_t* input_str){
         double add_voltage = _add_to_voltage(args[0]);
         allowed = allowed && config.ref_x+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
         allowed = allowed && config.ref_x+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
-        config.ref_x += allowed ? 0 : add_voltage;
+        config.ref_x += allowed ? add_voltage : 0;
         DAC_v_ref_set(config.ref_x, 0);
     }
     if(strcmp(cmd,"refy") == 0){
         double add_voltage = _add_to_voltage(args[0]);
         allowed = allowed && config.ref_y+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
         allowed = allowed && config.ref_y+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
-        config.ref_y += allowed ? 0 : add_voltage;
+        config.ref_y += allowed ? add_voltage : 0;
         DAC_v_ref_set(config.ref_y, 1);
     }
     if(strcmp(cmd,"refz") == 0){
         double add_voltage = _add_to_voltage(args[0]);
         allowed = allowed && config.ref_z+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
         allowed = allowed && config.ref_z+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
-        config.ref_z += allowed ? 0 : add_voltage;
+        config.ref_z += allowed ? add_voltage : 0;
         DAC_v_ref_set(config.ref_z, 2);
     }
     
     //update supply voltage
     if(strcmp(cmd,"supx") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.supply_x += config.supply_x+add_voltage >= CONFIG_MAX_SUPPLY_VOLTAGE ? 0 : add_voltage;
+        config.supply_x += config.supply_x+add_voltage <= CONFIG_MAX_SUPPLY_VOLTAGE ? add_voltage : 0;
         DAC_v_supply_set(config.supply_x, 0);
     }
     if(strcmp(cmd,"supy") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.supply_y += config.supply_y+add_voltage >= CONFIG_MAX_SUPPLY_VOLTAGE ? 0 : add_voltage;
+        config.supply_y += config.supply_y+add_voltage <= CONFIG_MAX_SUPPLY_VOLTAGE ? add_voltage : 0;
         DAC_v_supply_set(config.supply_y, 1);
     }
     if(strcmp(cmd,"supz") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.supply_x += config.supply_z+add_voltage >= CONFIG_MAX_SUPPLY_VOLTAGE ? 0 : add_voltage;
+        config.supply_z += config.supply_z+add_voltage <= CONFIG_MAX_SUPPLY_VOLTAGE ? add_voltage : 0;
         DAC_v_supply_set(config.supply_z, 2);
     }
     
+    if(strcmp(cmd,"average") == 0){
+        char* ptr;
+        uint8_t number_of_samples = strtol(args[0],&ptr,10);
+        allowed = number_of_samples >= 1 && number_of_samples <= CONFIG_MAX_SAMPLES ? true : false;
+        config.number_of_samples = allowed ? number_of_samples : config.number_of_samples;
+    }
     
     
 }

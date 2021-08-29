@@ -53,9 +53,9 @@ typedef struct{
     int16_t n_val_x;
     int16_t n_val_y;
     int16_t n_val_z;
-    int16_t diff_x;
-    int16_t diff_y;
-    int16_t diff_z;
+    int32_t diff_x;
+    int32_t diff_y;
+    int32_t diff_z;
     int16_t offset_x;
     int16_t offset_y;
     int16_t offset_z;
@@ -86,16 +86,16 @@ int main(void) {
                 printf("        x       y       z\r\n");
                 printf("P: %6d, %6d, %6d\r\n", main_data.p_val_x,main_data.p_val_y,main_data.p_val_z);
                 printf("N: %6d, %6d, %6d\r\n", main_data.n_val_x,main_data.n_val_y,main_data.n_val_z);
-                printf("   %6d, %6d, %6d\r\n", main_data.diff_x,main_data.diff_y,main_data.diff_z);
+                printf("   %6ld, %6ld, %6ld\r\n", main_data.diff_x,main_data.diff_y,main_data.diff_z);
                 printf("O: %6d, %6d, %6d\r\n", main_data.offset_x, main_data.offset_y, main_data.offset_z);
-                printf("\r\n");
+                printf("angle: %f,\r\n", atan2(main_data.diff_x,main_data.diff_y)* 180 / 3.1415);
                 timer_start_countdown(t2,200);
             }       
         }
         if(config_get_flipping_on()){
             switch(main_data.state){
                 case MAIN_STATE_P_FLIP:
-                    timer_start_countdown(t1,1);
+                    timer_start_countdown(t1,3);
                     P_FLIP_SetHigh();
                     main_data.state = MAIN_STATE_P_WAIT;
                     break;
@@ -116,7 +116,7 @@ int main(void) {
                     }
                     break;
                 case MAIN_STATE_N_FLIP:
-                    timer_start_countdown(t1,1);
+                    timer_start_countdown(t1,3);
                     N_FLIP_SetHigh();
                     main_data.state = MAIN_STATE_N_WAIT;
                     break;
@@ -138,16 +138,21 @@ int main(void) {
                     break;
                 case MAIN_STATE_EVAL:
                     //do eval stuff here
-                    main_data.diff_x = main_data.p_val_x-main_data.n_val_x;
-                    main_data.diff_y = main_data.p_val_y-main_data.n_val_y;
-                    main_data.diff_z = main_data.p_val_z-main_data.n_val_z;
+                    main_data.diff_x = (int32_t)main_data.p_val_x-(int32_t)main_data.n_val_x;
+                    main_data.diff_y = (int32_t)main_data.p_val_y-(int32_t)main_data.n_val_y;
+                    main_data.diff_z = (int32_t)main_data.p_val_z-(int32_t)main_data.n_val_z;
                     main_data.offset_x = ((int32_t)main_data.p_val_x+(int32_t)main_data.n_val_x)/2;
                     main_data.offset_y = ((int32_t)main_data.p_val_y+(int32_t)main_data.n_val_y)/2;
                     main_data.offset_z = ((int32_t)main_data.p_val_z+(int32_t)main_data.n_val_z)/2;
                     main_data.state = MAIN_STATE_SHOW;
+                    timer_start_countdown(t1,50);
                     break;
                 case MAIN_STATE_SHOW:
-                    main_data.state = MAIN_STATE_P_FLIP;
+                    if(timer_has_finished(t1)){
+                        main_data.state = MAIN_STATE_P_FLIP;
+                        timer_stop(t1);
+                    }
+                    
                     break;
                 default:
                     break;
