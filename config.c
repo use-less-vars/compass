@@ -68,9 +68,9 @@ void config_init(){
 
 //logic to evaluate inputs from user and put them to the config
 void _config_eval_user_input(uint8_t* input_str){
-    //...
+    
     printf("Some config came: %s\r\n", input_str);
-    //input commands are seperated by spaces only
+    //input commands are separated by spaces only
     char delim[] = " ";
     char* args[CONFIG_NUM_OF_ARGS];
     char* cmd;
@@ -83,19 +83,26 @@ void _config_eval_user_input(uint8_t* input_str){
     //do specific configs, this can be expanded for more config commands to come
     
     //update ref voltage
+    bool allowed = true;
     if(strcmp(cmd,"refx") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.ref_x += config.ref_x+add_voltage >= CONFIG_MAX_REF_VOLTAGE ? 0 : add_voltage;
+        allowed = allowed && config.ref_x+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
+        allowed = allowed && config.ref_x+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
+        config.ref_x += allowed ? 0 : add_voltage;
         DAC_v_ref_set(config.ref_x, 0);
     }
     if(strcmp(cmd,"refy") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.ref_y += config.ref_y+add_voltage >= CONFIG_MAX_REF_VOLTAGE ? 0 : add_voltage;
+        allowed = allowed && config.ref_y+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
+        allowed = allowed && config.ref_y+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
+        config.ref_y += allowed ? 0 : add_voltage;
         DAC_v_ref_set(config.ref_y, 1);
     }
     if(strcmp(cmd,"refz") == 0){
         double add_voltage = _add_to_voltage(args[0]);
-        config.ref_x += config.ref_z+add_voltage >= CONFIG_MAX_REF_VOLTAGE ? 0 : add_voltage;
+        allowed = allowed && config.ref_z+add_voltage <= CONFIG_MAX_REF_VOLTAGE;
+        allowed = allowed && config.ref_z+add_voltage >= CONFIG_MIN_REF_VOLTAGE;
+        config.ref_z += allowed ? 0 : add_voltage;
         DAC_v_ref_set(config.ref_z, 2);
     }
     
